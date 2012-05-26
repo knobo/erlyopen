@@ -17,7 +17,8 @@ make_window() ->
 
 
 %% create widgets
-    T1001 = wxTextCtrl:new(Panel, 1001,[{style, ?wxHSCROLL bor ?wxTE_PROCESS_ENTER}]),  %% ?wxTE_MULTILINE bor
+    T1001 = wxTextCtrl:new(Panel, 1001, [{style, ?wxHSCROLL bor ?wxTE_PROCESS_ENTER },
+					 {size, {400,-1}}]),  %% ?wxTE_MULTILINE bor
     wxTextCtrl:setEditable(T1001, true),
 
     B101  = wxButton:new(Panel, 101, [{label, "&Help"}]),
@@ -38,19 +39,23 @@ make_window() ->
 								   end
 							   end}]),
 
-    wxFrame:connect(T1001, command_text_updated, [{callback, fun(A, _) ->
-								     Rec = A#wx.event,
-								     case Rec  of
-									 {_,_,Txt,_,_} -> SB = wxFrame:getStatusBar(Frame),
-											  try 
-											      T = run("whatis " ++ Txt),
-											      wxStatusBar:pushStatusText(SB, lib:nonl(T))
-											  catch
-											      _ -> wxStatusBar:pushStatusText(SB, Txt)
-											  end
-								     end
-							     end}]),
-
+    wxFrame:connect(T1001, command_text_updated, 
+		    [{callback, fun(A, _) ->
+					Rec = A#wx.event,
+					case Rec  of
+					    {_,_,Txt,_,_} -> SB = wxFrame:getStatusBar(Frame),
+							     try
+								 case string:tokens(Txt," ") of
+								     [Cmd | _] -> T = run("whatis " ++ Cmd),
+										  wxStatusBar:pushStatusText(SB, lib:nonl(T));
+								     _ -> wxStatusBar:pushStatusText(SB, "Enter command")
+								 end
+							     catch
+								 _ -> wxStatusBar:pushStatusText(SB, Txt)
+							     end
+					end
+				end}]),
+    
 
     G = wxBoxSizer:new( ?wxVERTICAL),
     H = wxBoxSizer:new( ?wxHORIZONTAL),
@@ -58,6 +63,7 @@ make_window() ->
     wxSizer:add(G, T1001, [{flag, ?wxEXPAND bor ?wxALIGN_CENTRE bor ?wxSHAPED}] ),
 
     wxSizer:add(H, B101,    [{flag, ?wxALIGN_RIGHT}]),
+    wxSizer:addStretchSpacer(H, [{prop, 1}]),
     wxSizer:add(H, B102,    [{flag, ?wxALIGN_RIGHT}]),
     wxSizer:add(H, B103,    [{flag, ?wxALIGN_RIGHT}]),
     wxSizer:add(G, H, [{flag,   ?wxEXPAND  }]),
