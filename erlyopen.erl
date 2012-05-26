@@ -47,15 +47,15 @@ make_window() ->
 							     try
 								 case string:tokens(Txt," ") of
 								     [Cmd | _] -> T = run("whatis " ++ Cmd),
-										  wxStatusBar:pushStatusText(SB, lib:nonl(T));
-								     _ -> wxStatusBar:pushStatusText(SB, "Enter command")
+										  wxStatusBar:setStatusText(SB, lib:nonl(T));
+								     _ -> wxStatusBar:setStatusText(SB, "Enter command")
 								 end
 							     catch
-								 _ -> wxStatusBar:pushStatusText(SB, Txt)
+								 _ -> wxStatusBar:setStatusText(SB, Txt)
 							     end
 					end
 				end}]),
-    
+
 
     G = wxBoxSizer:new( ?wxVERTICAL),
     H = wxBoxSizer:new( ?wxHORIZONTAL),
