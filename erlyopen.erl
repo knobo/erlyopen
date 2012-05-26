@@ -25,34 +25,34 @@ make_window() ->
     B102  = wxButton:new(Panel, ?wxID_EXIT, [{label, "&Cancle"}]), 
     B103  = wxButton:new(Panel, ?wxID_EXIT, [{label, "&Run"}]), 
 
-    wxFrame:connect(B101, command_button_clicked, [{callback, fun(_, _) ->  io:format("Users clicked button~n",[]) end }]),  %%handle_event}]),
+    wxFrame:connect(B101, command_button_clicked, [{callback, fun(_, _) ->  io:format("Users clicked button~n",[]) end }]), 
     wxFrame:connect(T1001, command_text_enter, [{callback, fun(A, _) ->
-								   Rec = A#wx.event,
-								   io:format("RUNNING\n",[]),
-								   case Rec of
-								       {_,_,Txt,_,_} -> try
-											    run(Txt)
-											catch
-											    _ -> SB = wxFrame:getStatusBar(Frame),
-												 wxStatusBar:pushStatusText(SB, "Error")
-											end
+								   {_,_,Txt,_,_} = A#wx.event,
+								   io:format("RUNNING: ~p\n",[Txt]),
+								   SB = wxFrame:getStatusBar(Frame),
+								   try
+								       Result = run(Txt),
+								       io:format("runned ~p\n",[Result]),
+								       Dialog = wxMessageDialog:new(Server, Result),
+								       wxMessageDialog:show( Dialog, [{show, true}])
+								   catch
+								       _ -> wxStatusBar:pushStatusText(SB, "Error running: " ++ Txt)
 								   end
 							   end}]),
 
     wxFrame:connect(T1001, command_text_updated, 
 		    [{callback, fun(A, _) ->
-					Rec = A#wx.event,
-					case Rec  of
-					    {_,_,Txt,_,_} -> SB = wxFrame:getStatusBar(Frame),
-							     try
-								 case string:tokens(Txt," ") of
-								     [Cmd | _] -> T = run("whatis " ++ Cmd),
-										  wxStatusBar:setStatusText(SB, lib:nonl(T));
-								     _ -> wxStatusBar:setStatusText(SB, "Enter command")
-								 end
-							     catch
-								 _ -> wxStatusBar:setStatusText(SB, Txt)
-							     end
+					io:format("~p\n", [A]),
+					{_,_,Txt,_,_} = A#wx.event,
+					SB = wxFrame:getStatusBar(Frame),
+					try
+					    case string:tokens(Txt," ") of
+						[Cmd | _] -> T = run("whatis " ++ Cmd),
+							     wxStatusBar:setStatusText(SB, lib:nonl(T));
+						_ -> wxStatusBar:setStatusText(SB, "Enter command")
+					    end
+					catch
+					    _ -> wxStatusBar:setStatusText(SB, Txt)
 					end
 				end}]),
 
