@@ -33,8 +33,8 @@ make_window() ->
 								   try
 								       Result = run(Txt),
 								       io:format("runned ~p\n",[Result]),
-								       Dialog = wxMessageDialog:new(Server, Result),
-								       wxMessageDialog:show( Dialog, [{show, true}])
+								       Dialog = wxMessageDialog:new(Frame, Result),
+								       wxMessageDialog:showModal( Dialog)
 								   catch
 								       _ -> wxStatusBar:pushStatusText(SB, "Error running: " ++ Txt)
 								   end
@@ -42,7 +42,6 @@ make_window() ->
 
     wxFrame:connect(T1001, command_text_updated, 
 		    [{callback, fun(A, _) ->
-					io:format("~p\n", [A]),
 					{_,_,Txt,_,_} = A#wx.event,
 					SB = wxFrame:getStatusBar(Frame),
 					try
